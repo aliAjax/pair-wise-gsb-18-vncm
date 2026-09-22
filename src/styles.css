@@ -260,6 +260,267 @@ input {
   line-height: 1.6;
 }
 
+select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  color: #172033;
+  background: #ffffff;
+  font: inherit;
+}
+
+.blocked-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 18px 22px;
+  border: 1px solid #fecaca;
+  border-left: 6px solid #e11d48;
+  border-radius: 8px;
+  background: #fff5f5;
+}
+
+.blocked-banner strong {
+  color: #be123c;
+}
+
+.blocked-banner dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 10px 0 0;
+}
+
+.blocked-banner dt {
+  font-size: 12px;
+  color: #9f1239;
+}
+
+.blocked-banner dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+.slot-board {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.slot-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.slot-row.slot-busy {
+  background: color-mix(in srgb, var(--warn) 10%, #ffffff);
+  border-color: color-mix(in srgb, var(--warn) 40%, #ffffff);
+}
+
+.slot-row.slot-free {
+  background: color-mix(in srgb, #16a34a 8%, #ffffff);
+}
+
+.queue-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 10px;
+}
+
+.queue-list li span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.case-list {
+  display: grid;
+  gap: 14px;
+}
+
+.case-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  background: #fbfdff;
+}
+
+.case-card.is-closed {
+  background: #f8fafc;
+  border-style: dashed;
+}
+
+.case-card header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.case-card header h3 {
+  margin: 0;
+}
+
+.case-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 20px;
+  margin: 0 0 14px;
+}
+
+.case-fields dt {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.case-fields dd {
+  margin: 2px 0 0;
+  line-height: 1.5;
+}
+
+.case-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.case-actions input,
+.case-actions select {
+  width: auto;
+  min-width: 160px;
+  flex: 0 1 auto;
+}
+
+.case-actions .reason-input {
+  flex: 1 1 220px;
+}
+
+.action-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.danger-action {
+  border-color: #e11d48;
+  color: #e11d48;
+}
+
+.case-actions.frozen {
+  border-top: 1px dashed var(--border);
+  padding-top: 12px;
+}
+
+.frozen-hint {
+  width: 100%;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.status-badge,
+.risk-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-occupied {
+  background: color-mix(in srgb, var(--warn) 15%, #ffffff);
+  color: #9a3412;
+}
+
+.status-queued {
+  background: color-mix(in srgb, var(--primary) 12%, #ffffff);
+  color: var(--primary);
+}
+
+.status-closed {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.risk-高 {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.risk-中 {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.risk-低 {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.revision-list {
+  display: grid;
+  gap: 10px;
+}
+
+.revision-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #fbfdff;
+}
+
+.revision-card header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.revision-card time {
+  margin-left: auto;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.revision-kind {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, #ffffff);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.revision-card p {
+  margin: 0 0 4px;
+  line-height: 1.6;
+}
+
+.revision-reason {
+  color: #526070;
+  font-size: 13px;
+}
+
+.empty-hint {
+  color: #94a3b8;
+  margin: 0;
+}
+
+.form-footer {
+  display: flex;
+  align-items: end;
+}
+
 @media (max-width: 860px) {
   .hero,
   .workspace,
