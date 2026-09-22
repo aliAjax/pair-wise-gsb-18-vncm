@@ -1,158 +1,129 @@
+import { useMemo, useState } from "react";
 import "./styles.css";
+import { dispatch, resetBoard, useBoardState } from "./data/store";
+import type { BoardAction, RegisterInput } from "./domain/rules";
+import {
+  checkConsistency,
+  selectBlocked,
+  selectCasesView,
+  selectMetrics,
+  selectOccupancy,
+  selectQueue,
+  selectRevisions,
+} from "./domain/selectors";
+import type { BlockInfo } from "./data/types";
+import { formatDate } from "./ui/format";
+import { MetricsPanel } from "./ui/MetricsPanel";
+import { QueuePanel } from "./ui/QueuePanel";
+import { OccupancyPanel } from "./ui/OccupancyPanel";
+import { RegisterForm } from "./ui/RegisterForm";
+import { CaseCard } from "./ui/CaseCard";
+import { BlockBanner, BlockHistoryPanel } from "./ui/BlockPanels";
+import { RevisionsPanel } from "./ui/RevisionsPanel";
 
-const project = {
-  "id": "hxwl-04",
-  "port": 5104,
-  "title": "牙科根管治疗",
-  "subtitle": "按牙位组织根管步骤、工作长度与复诊计划",
-  "stack": "React + Vite + TypeScript + CSS",
-  "theme": [
-    "#0369a1",
-    "#7c3aed",
-    "#ea580c"
-  ],
-  "domain": "牙体牙髓",
-  "users": [
-    "牙科医生",
-    "助理",
-    "前台复诊协调员"
-  ],
-  "metrics": [
-    "待复诊",
-    "已充填",
-    "平均工作长度",
-    "封药病例"
-  ],
-  "filters": [
-    "开髓",
-    "测长",
-    "封药",
-    "充填"
-  ],
-  "fields": [
-    "牙位",
-    "开髓",
-    "测长",
-    "根管预备",
-    "冲洗",
-    "封药",
-    "主尖锉号"
-  ],
-  "records": [
-    [
-      "#36",
-      "慢性根尖周炎",
-      "封药",
-      "MB 19.5mm，主尖锉#30"
-    ],
-    [
-      "#11",
-      "外伤后变色",
-      "充填",
-      "单根管，冷侧压完成"
-    ],
-    [
-      "#46",
-      "急性牙髓炎",
-      "测长",
-      "近中双根管需复诊"
-    ]
-  ]
-};
-
-const statusColors = ["status-ok", "status-watch", "status-danger"];
-
-function MetricCard({ label, value, index }: { label: string; value: string; index: number }) {
-  return (
-    <article className="metric-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <i className={statusColors[index % statusColors.length]} />
-    </article>
-  );
-}
+const BASE_SLOTS = [
+  "09-23 09:00",
+  "09-23 10:30",
+  "09-23 14:00",
+  "09-24 09:00",
+  "09-24 10:30",
+  "09-24 14:00",
+  "09-25 09:00",
+];
 
 function App() {
-  const values = project.metrics.map((metric: string, index: number) => {
-    const base = [84, 12, 31, 7][index % 4];
-    return String(base + index * 3);
-  });
+  const state = useBoardState();
+  const now = useMemo(() => Date.now(), []);
+  const [latestBlock, setLatestBlock] = useState<BlockInfo | null>(null);
+
+  const metrics = selectMetrics(state);
+  const queue = selectQueue(state, now);
+  const occupancy = selectOccupancy(state);
+  const casesView = selectCasesView(state, now);
+  const revisions = selectRevisions(state);
+  const blocked = selectBlocked(state);
+  const issues = checkConsistency(state);
+
+  // 显微镜时段建议：已有占用 + 预设班次，去重排序
+  const slotOptions = useMemo(() => {
+    return Array.from(new Set([...occupancy.map((o) => o.slot), ...BASE_SLOTS])).sort((a, b) =>
+      a < b ? -1 : 1,
+    );
+  }, [occupancy]);
+
+  const act = (action: BoardAction): BlockInfo | null => {
+    const result = dispatch(action);
+    setLatestBlock(result.blocked);
+    return result.blocked;
+  };
+
+  const register = (input: RegisterInput): BlockInfo | null =>
+    act({ type: "register", input });
 
   return (
     <main className="app-shell">
       <section className="hero">
         <div>
-          <p className="eyebrow">{project.id} · port {project.port}</p>
-          <h1>{project.title}</h1>
-          <p className="subtitle">{project.subtitle}</p>
+          <p className="eyebrow">hxwl-04 · port 5104 · 显微根管再治疗排程台</p>
+          <h1>显微根管再治疗排程台</h1>
+          <p className="subtitle">
+            按牙位登记残留器械位置、风险级别、显微镜时段与复诊期限；单台显微镜一时段仅排一台，
+            风险升级或改约先归还原占用再重新排队；取出结果未登记不得结案，结案后冻结。
+          </p>
         </div>
         <div className="stack-card">
-          <span>技术栈</span>
-          <strong>{project.stack}</strong>
+          <span>分层架构 · 无新增依赖</span>
+          <strong>记录层（localStorage） → 判定层（纯规则） → 展示层（React）</strong>
+          <button className="reset-button" onClick={resetBoard}>
+            恢复演示数据
+          </button>
         </div>
       </section>
 
-      <section className="metrics-grid">
-        {project.metrics.map((metric: string, index: number) => (
-          <MetricCard key={metric} label={metric} value={values[index]} index={index} />
-        ))}
-      </section>
+      <MetricsPanel metrics={metrics} />
+
+      <BlockBanner block={latestBlock} />
+
+      {issues.length > 0 && (
+        <section className="consistency-banner" role="alert">
+          <strong>一致性告警：</strong>
+          {issues.map((issue) => (
+            <span key={issue.message}>{issue.message}</span>
+          ))}
+        </section>
+      )}
 
       <section className="workspace">
-        <aside className="panel narrow">
-          <h2>角色</h2>
-          <div className="chips">
-            {project.users.map((user: string) => (
-              <span key={user}>{user}</span>
-            ))}
-          </div>
-          <h2>筛选</h2>
-          <div className="chips muted">
-            {project.filters.map((filter: string) => (
-              <button key={filter}>{filter}</button>
-            ))}
-          </div>
-        </aside>
-
-        <section className="panel">
-          <div className="section-heading">
-            <div>
-              <p>{project.domain}</p>
-              <h2>记录字段</h2>
-            </div>
-            <button className="primary-action">新增记录</button>
-          </div>
-          <div className="field-grid">
-            {project.fields.map((field: string) => (
-              <label key={field}>
-                <span>{field}</span>
-                <input placeholder={"填写" + field} />
-              </label>
-            ))}
-          </div>
-        </section>
+        <QueuePanel queue={queue} />
+        <div className="panel-stack">
+          <RegisterForm onRegister={register} today={formatDate(now)} />
+          <OccupancyPanel occupancy={occupancy} slotOptions={slotOptions} />
+        </div>
       </section>
 
       <section className="records panel">
         <div className="section-heading">
           <div>
-            <p>示例数据</p>
-            <h2>近期记录</h2>
+            <p>牙位档案</p>
+            <h2>再治疗病例（排队 / 已排程 / 已结案冻结）</h2>
           </div>
-          <button>导出摘要</button>
+          <span className="rule-chip">全部操作经判定层校验</span>
         </div>
         <div className="record-list">
-          {project.records.map((record: string[], index: number) => (
-            <article key={record.join("-")} className="record-card">
-              <div className="record-index">{String(index + 1).padStart(2, "0")}</div>
-              <div>
-                <h3>{record[0]}</h3>
-                <p>{record.slice(1).join(" · ")}</p>
-              </div>
-            </article>
+          {casesView.map(({ item, overdue }) => (
+            <CaseCard
+              key={item.id}
+              item={item}
+              overdue={overdue}
+              slotOptions={slotOptions}
+              act={act}
+            />
           ))}
         </div>
       </section>
+
+      <RevisionsPanel revisions={revisions} />
+      <BlockHistoryPanel blocked={blocked} />
     </main>
   );
 }
